@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     env:
       CONFIG_PATH: ./src/Shared/config.json
@@ -26,6 +26,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
+      - name: Install dependencies for Homebrew
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential procps curl file git
+
+      - name: Install Homebrew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $GITHUB_ENV
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
       - name: Install Swift
         run: brew install swift
@@ -48,4 +59,3 @@ jobs:
         with:
           name: allure-report
           path: src/TestResults/AllureReport
-
