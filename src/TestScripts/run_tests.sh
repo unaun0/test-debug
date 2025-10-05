@@ -43,26 +43,33 @@ echo "E2E tests exit code: $E2E_CODE"
 
 echo "▶ Allure results..."
 
-ALLURE_RESULTS_DIR="$RESULTS_DIR/AllureResults"
-ALLURE_HTML_DIR="$RESULTS_DIR/AllureReport"
+ALLURE_DIR="./Allure"
+ALLURE_RESULTS_DIR="$ALLURE_DIR/allure-results"
 
-rm -rf "$ALLURE_RESULTS_DIR"
 mkdir -p "$ALLURE_RESULTS_DIR"
 
 cp "$RUN_DIR"/*.xml "$ALLURE_RESULTS_DIR/" || echo "No XML results found"
 
-if [ -d "$ALLURE_HTML_DIR/history" ]; then
-    echo "▶ Copying Allure history..."
-    mkdir -p "$ALLURE_RESULTS_DIR/history"
-    cp -r "$ALLURE_HTML_DIR/history" "$ALLURE_RESULTS_DIR/"
-fi
+# ALLURE_RESULTS_DIR="$RESULTS_DIR/AllureResults"
+# ALLURE_HTML_DIR="$RESULTS_DIR/AllureReport"
 
-mkdir -p "$ALLURE_HTML_DIR"
-echo "▶ Generating Allure report..."
-if ! allure generate "$ALLURE_RESULTS_DIR" -o "$ALLURE_HTML_DIR" --clean; then
-    echo "Failed to generate Allure report"
-    exit 1
-fi
+# rm -rf "$ALLURE_RESULTS_DIR"
+# mkdir -p "$ALLURE_RESULTS_DIR"
+
+# cp "$RUN_DIR"/*.xml "$ALLURE_RESULTS_DIR/" || echo "No XML results found"
+
+# if [ -d "$ALLURE_HTML_DIR/history" ]; then
+#     echo "▶ Copying Allure history..."
+#     mkdir -p "$ALLURE_RESULTS_DIR/history"
+#     cp -r "$ALLURE_HTML_DIR/history" "$ALLURE_RESULTS_DIR/"
+# fi
+
+# mkdir -p "$ALLURE_HTML_DIR"
+# echo "▶ Generating Allure report..."
+# if ! allure generate "$ALLURE_RESULTS_DIR" -o "$ALLURE_HTML_DIR" --clean; then
+#     echo "Failed to generate Allure report"
+#     exit 1
+# fi
 
 # allure open "$ALLURE_HTML_DIR"
 

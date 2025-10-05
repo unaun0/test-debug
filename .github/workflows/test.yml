@@ -27,22 +27,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install dependencies for Homebrew
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential procps curl file git
-
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $GITHUB_ENV
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-      - name: Install Swift
-        run: brew install swift
-
-      - name: Install Allure
-        run: brew install allure
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2.3.0
+        with:
+          swift-version: '5.9.0'
 
       - name: Set permissions for scripts
         run: chmod +x src/TestScripts/*.sh
@@ -54,8 +42,15 @@ jobs:
         working-directory: src
         run: ./TestScripts/run_tests.sh true
 
+      - name: Allure Report with history
+        uses: simple-elf/allure-report-action@v1.13
+        with:
+          allure_results: src/Allure/allure-results
+          allure_report: src/Allure/allure-report
+          allure_history: src/Allure/allure-history
+
       - name: Upload Allure Report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: src/TestResults/AllureReport
+          path: src/Allure/allure-report
