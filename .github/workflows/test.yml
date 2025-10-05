@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-12
+    runs-on: macos-15-intel
 
     env:
       CONFIG_PATH: ./src/Shared/config.json
