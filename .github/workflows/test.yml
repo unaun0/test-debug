@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     env:
       CONFIG_PATH: ./src/Shared/config.json
@@ -28,17 +28,14 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Install Swift
-        run: sudo apt-get update && sudo apt-get install -y swift
+        run: brew install swift
 
       - name: Install Allure
-        run: |
-          sudo apt-add-repository ppa:qameta/allure
-          sudo apt-get update
-          sudo apt-get install -y allure
+        run: brew install allure
 
       - name: Set permissions for scripts
         run: chmod +x src/TestScripts/*.sh
-        
+
       - name: Initialize database
         run: ./create_db.sh
 
