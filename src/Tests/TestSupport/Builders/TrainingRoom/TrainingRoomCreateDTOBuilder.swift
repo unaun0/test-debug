@@ -1,0 +1,23 @@
+//
+//  TrainingRoomCreateDTOBuilder.swift
+//  Backend
+//
+//  Created by Tskhovrebova Yana on 07.09.2025.
+//
+
+@testable import Domain
+
+final class TrainingRoomCreateDTOBuilder {
+    private var name: String = "Тренажерный зал"
+    private var capacity: Int = 20
+
+    func withName(_ name: String) -> Self { self.name = name; return self }
+    func withCapacity(_ capacity: Int) -> Self { self.capacity = capacity; return self }
+
+    func build() -> TrainingRoomCreateDTO {
+        TrainingRoomCreateDTO(
+            name: name,
+            capacity: capacity
+        )
+    }
+}

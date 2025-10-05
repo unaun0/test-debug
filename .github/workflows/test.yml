@@ -1,0 +1,39 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Swift
+        run: |
+          brew install swift
+
+      - name: Install Allure
+        run: |
+          brew install allure
+
+      - name: Set permissions for scripts
+        run: |
+          chmod +x src/TestScripts/*.sh
+
+      - name: Run tests
+        working-directory: src
+        run: |
+          ./TestScripts/run_tests.sh true
+
+      - name: Upload Allure Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: src/TestResults/AllureReport
+
