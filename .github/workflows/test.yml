@@ -14,22 +14,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install Swift
+      - name: Install Docker & Docker Compose
         run: |
-          brew install swift
+          brew install docker docker-compose
+          docker --version
+          docker-compose --version
+
+      - name: Start Docker Compose services
+        run: |
+          docker-compose -f ./src/docker-compose.yml up -d
+          docker-compose -f ./src/docker-compose.yml ps
+
+      - name: Install Swift
+        run: brew install swift
 
       - name: Install Allure
-        run: |
-          brew install allure
+        run: brew install allure
 
       - name: Set permissions for scripts
-        run: |
-          chmod +x src/TestScripts/*.sh
+        run: chmod +x src/TestScripts/*.sh
 
       - name: Run tests
         working-directory: src
-        run: |
-          ./TestScripts/run_tests.sh true
+        run: ./TestScripts/run_tests.sh true
 
       - name: Upload Allure Report as Artifact
         uses: actions/upload-artifact@v4
@@ -37,3 +44,5 @@ jobs:
           name: allure-report
           path: src/TestResults/AllureReport
 
+      - name: Tear down Docker Compose services
+        run: docker-compose -f ./src/docker-compose.yml down
