@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     env:
       CONFIG_PATH: ./src/Shared/config.json
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Swift
         uses: swift-actions/setup-swift@v2.3.0
         with:
-          swift-version: '5.9.0'
+          swift-version: '6.1.0'
 
       - name: Set permissions for scripts
         run: chmod +x src/TestScripts/*.sh
