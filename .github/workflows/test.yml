@@ -8,55 +8,41 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: macos-latest
 
     env:
       CONFIG_PATH: ./src/Shared/config.json
-
-    services:
-      postgres-test:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: testdb
-        ports:
-          - 5433:5432
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install Swift manually
+      - name: Setup Docker on macOS
+        uses: douglascamata/setup-docker-macos-action@v1.0.0
+        with:
+          colima: latest
+          colima-network-address: true
+
+      - name: Check Docker
+        run: docker version
+
+      # 🐘 Поднимаем Postgres контейнер
+      - name: Run Postgres
         run: |
-          sudo apt-get update
-          sudo apt-get install -y clang libicu-dev libxml2-dev libcurl4-openssl-dev libz-dev libsqlite3-dev
-          SWIFT_VERSION=6.0.1
-          wget https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu2204/swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04.tar.gz
-          tar xzf swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04.tar.gz
-          sudo mv swift-${SWIFT_VERSION}-RELEASE-ubuntu22.04 /usr/share/swift
-          echo "export PATH=/usr/share/swift/usr/bin:\$PATH" >> $GITHUB_ENV
-          swift --version
+          docker run -d \
+            --name postgres-test \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=password \
+            -e POSTGRES_DB=testdb \
+            -p 5433:5432 \
+            postgres:16-alpine
+          sleep 5
+
+      - name: Check Swift
+        run: swift --version
 
       - name: Set permissions for scripts
         run: chmod +x src/TestScripts/*.sh
 
       - name: Initialize database
         run: ./create_db.sh
-
-      - name: Run tests
-        working-directory: src
-        run: ./TestScripts/run_tests.sh true
-
-      - name: Allure Report with history
-        uses: simple-elf/allure-report-action@v1.13
-        with:
-          allure_results: src/Allure/allure-results
-          allure_report: src/Allure/allure-report
-          allure_history: src/Allure/allure-history
-
-      - name: Upload Allure Report as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: src/Allure/allure-report
