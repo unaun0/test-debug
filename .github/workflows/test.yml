@@ -1,11 +1,14 @@
 name: Testing
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   start-db:
-    runs-on: macos-latest
+    runs-on: macos-16-intel
     services:
       postgres-test:
         image: postgres:16-alpine
