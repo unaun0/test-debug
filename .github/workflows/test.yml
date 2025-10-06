@@ -1,49 +1,51 @@
-name: Run Tests
+name: Testing
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: macos-15-intel
+  start-db:
+    runs-on: ubuntu-22.04
+    outputs:
+      db-ip: ${{ steps.get-ip.outputs.ip }}
 
-    env:
-      CONFIG_PATH: ./src/Shared/config.json
+    services:
+      postgres-test:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        ports:
+          - 5433:5432
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v5
 
-      - name: Setup Docker on macOS
-        uses: douglascamata/setup-docker-macos-action@v1.0.0
-        with:
-          colima: latest
-          colima-network-address: true
-
-      - name: Check Docker
-        run: docker version
-
-      # 🐘 Поднимаем Postgres контейнер
-      - name: Run Postgres
+      - name: Get Ubuntu runner IP
+        id: get-ip
         run: |
-          docker run -d \
-            --name postgres-test \
-            -e POSTGRES_USER=postgres \
-            -e POSTGRES_PASSWORD=password \
-            -e POSTGRES_DB=testdb \
-            -p 5433:5432 \
-            postgres:16-alpine
-          sleep 5
+          echo "ip=$(hostname -I | awk '{print $1}')" >> $GITHUB_OUTPUT
 
-      - name: Check Swift
-        run: swift --version
+      - name: Wait for DB to be ready
+        run: |
+          until docker exec fitapp_db_test pg_isready -U postgres -d testdb; do
+            echo "Waiting for DB..."
+            sleep 2
+          done
 
-      - name: Set permissions for scripts
-        run: chmod +x src/TestScripts/*.sh
+  test-on-macos:
+    runs-on: macos-latest
+    needs: start-db
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
 
-      - name: Initialize database
-        working-directory: src
-        run: sh TestScripts/create_db.sh
+      - name: Install PostgreSQL client
+        run: brew install libpq
+
+      - name: Test DB connection
+        run: |
+          export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+          PGPASSWORD=password psql -h ${{ needs.start-db.outputs.db-ip }} -p 5433 -U postgres -d testdb -c "SELECT version();"
