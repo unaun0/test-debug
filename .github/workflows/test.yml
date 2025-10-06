@@ -45,4 +45,5 @@ jobs:
         run: chmod +x src/TestScripts/*.sh
 
       - name: Initialize database
-        run: ./create_db.sh
+        working-directory: src
+        run: sh src/TestScripts/create_db.sh
