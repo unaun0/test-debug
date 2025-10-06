@@ -46,4 +46,4 @@ jobs:
 
       - name: Initialize database
         working-directory: src
-        run: sh src/TestScripts/create_db.sh
+        run: sh TestScripts/create_db.sh
