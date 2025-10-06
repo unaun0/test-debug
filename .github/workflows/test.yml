@@ -8,7 +8,7 @@ on:
 
 jobs:
   start-db:
-    runs-on: macos-16-intel
+    runs-on: macos-15-intel
     services:
       postgres-test:
         image: postgres:16-alpine
