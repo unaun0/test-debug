@@ -45,6 +45,10 @@ jobs:
         working-directory: src
         run: sh -x TestScripts/create_db.sh
         
+      - name: Build tests
+        working-directory: src
+        run: swift build --build-tests
+
       - name: Create results folder
         run: mkdir -p TestResults
 
@@ -53,3 +57,5 @@ jobs:
           if [ ! -d "TestResults" ]; then
             exit 1
           fi
+
+      
