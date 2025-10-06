@@ -50,6 +50,6 @@ jobs:
 
       - name: Check if results folder exists
         run: |
-          if [ ! -d "TestResults" ]; then"
+          if [ ! -d "TestResults" ]; then
             exit 1
           fi
