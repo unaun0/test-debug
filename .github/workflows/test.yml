@@ -7,35 +7,20 @@ on:
     branches: [main]
 
 jobs:
-  start-db:
+  docker-job:
     runs-on: macos-15-intel
-    services:
-      postgres-test:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: testdb
-        ports:
-          - 5433:5432
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        
-      - name: Wait for DB to be ready
-        run: |
-          until pg_isready -h localhost -p 5433 -U postgres -d testdb; do
-            echo "Waiting for DB..."
-            sleep 2
-          done
-
-  test-on-macos:
-    runs-on: macos-latest
-    needs: start-db
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
 
-      - name: Install PostgreSQL client
-        run: brew install libpq
+      - name: Setup Docker on macOS
+        uses: douglascamata/setup-docker-macos-action@v1.0.0
+        with:
+          colima-additional-options: "--cpu 4 --memory 4"
+
+      - name: Check Docker version
+        run: docker --version
+
+      - name: Run Docker container
+        run: |
+          docker run --rm alpine echo "Hello from Docker"
