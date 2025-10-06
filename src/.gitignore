@@ -13,9 +13,9 @@ db.sqlite
 xcresults
 TestReports
 Shared/app.log
-Shared/init-scripts
-Shared/db
-Shared/config.json
 xcresults
 AllureReports/
 .vscode
+../.DS_Store
+Allure/
+TestResults/
