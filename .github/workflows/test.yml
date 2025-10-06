@@ -5,9 +5,7 @@ on:
 
 jobs:
   start-db:
-    runs-on: ubuntu-latest
-    outputs:
-      db-ip: ${{ steps.get-ip.outputs.ip }}
+    runs-on: macos-latest
     services:
       postgres-test:
         image: postgres:16-alpine
@@ -21,12 +19,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
-      - name: Get Ubuntu runner IP
-        id: get-ip
-        run: |
-          echo "ip=$(hostname -I | awk '{print $1}')" >> $GITHUB_OUTPUT
-
+        
       - name: Wait for DB to be ready
         run: |
           until pg_isready -h localhost -p 5433 -U postgres -d testdb; do
@@ -43,8 +36,3 @@ jobs:
 
       - name: Install PostgreSQL client
         run: brew install libpq
-
-      - name: Test DB connection
-        run: |
-          export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
-          PGPASSWORD=password psql -h ${{ needs.start-db.outputs.db-ip }} -p 5433 -U postgres -d testdb -c "SELECT version();"
