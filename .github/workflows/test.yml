@@ -1,4 +1,4 @@
-name: Testing
+name: Run Tests
 
 on:
   push:
@@ -7,8 +7,21 @@ on:
     branches: [main]
 
 jobs:
-  check-version:
+  test:
     runs-on: ubuntu-22.04
+
+    env:
+      CONFIG_PATH: ./src/Shared/config.json
+
+    services:
+      postgres-test:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testdb
+        ports:
+          - 5433:5432
 
     steps:
       - name: Checkout repository
@@ -21,3 +34,10 @@ jobs:
 
       - name: Show Swift version
         run: swift --version
+
+      - name: Set permissions for scripts
+        run: chmod +x src/TestScripts/*.sh
+
+      - name: Initialize database
+        working-directory: src
+        run: sh TestScripts/create_db.sh
