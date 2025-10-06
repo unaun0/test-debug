@@ -132,7 +132,7 @@ private func configureServices(_ app: Application, config: AppConfig) {
         userService: app.userService!
     )
     app.trainerSelfService = TrainerSelfService(
-        trainerService: app.trainerService!,
+        trainerService: app.trainerService!
     )
     app.trainingRoomService = TrainingRoomService(
         repository: app.trainingRoomRepository!

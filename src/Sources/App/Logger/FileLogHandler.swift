@@ -21,7 +21,7 @@ final class FileLogHandler: LogHandler, @unchecked Sendable {
 
         let fileURL = URL(fileURLWithPath: filePath)
         if !FileManager.default.fileExists(atPath: filePath) {
-            FileManager.default.createFile(atPath: filePath, contents: nil)
+            _ = FileManager.default.createFile(atPath: filePath, contents: nil)
         }
         self.fileHandle = try FileHandle(forWritingTo: fileURL)
         self.fileHandle.seekToEndOfFile()
