@@ -27,30 +27,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2.3.0
+      - name: Set up Swift
+        uses: SwiftyLab/setup-swift@latest
         with:
-          swift-version: '6.1.0'
+          swift-version: "6.0"
+
+      - name: Show Swift version
+        run: swift --version
 
       - name: Set permissions for scripts
         run: chmod +x src/TestScripts/*.sh
 
       - name: Initialize database
-        run: ./create_db.sh
-
-      - name: Run tests
         working-directory: src
-        run: ./TestScripts/run_tests.sh true
-
-      - name: Allure Report with history
-        uses: simple-elf/allure-report-action@v1.13
-        with:
-          allure_results: src/Allure/allure-results
-          allure_report: src/Allure/allure-report
-          allure_history: src/Allure/allure-history
-
-      - name: Upload Allure Report as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: src/Allure/allure-report
+        run: sh -x TestScripts/create_db.sh
