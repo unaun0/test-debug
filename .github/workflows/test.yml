@@ -7,20 +7,17 @@ on:
     branches: [main]
 
 jobs:
-  docker-job:
-    runs-on: macos-15-intel
+  check-version:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Docker on macOS
-        uses: douglascamata/setup-docker-macos-action@v1.0.0
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
         with:
-          colima-additional-options: "--cpu 4 --memory 4"
+          swift-version: "5.3"
 
-      - name: Check Docker version
-        run: docker --version
-
-      - name: Run Docker container
-        run: |
-          docker run --rm alpine echo "Hello from Docker"
+      - name: Show Swift version
+        run: swift --version
