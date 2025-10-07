@@ -67,7 +67,7 @@ jobs:
             --num-workers 8 \
             --disable-swift-testing \
             --xunit-output "../$RUN_DIR/unit-tests.xml"; then
-              UNIT_TEST_EXIT_CODE=$?
+              UNIT_TEST_EXIT_CODE=1
           fi
           echo "▶ Unit tests finished with exit code: $UNIT_TEST_EXIT_CODE"
           echo "UNIT_TEST_EXIT_CODE=$UNIT_TEST_EXIT_CODE" >> $GITHUB_ENV
