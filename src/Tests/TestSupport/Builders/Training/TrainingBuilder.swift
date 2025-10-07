@@ -28,7 +28,7 @@ final class TrainingBuilder {
             id: id,
             date: date,
             roomId: roomId,
-            trainerId: trainerId,
+            trainerId: trainerId
         )
     }
 }
