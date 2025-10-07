@@ -12,7 +12,6 @@ suite_name = sys.argv[2]
 tree = ET.parse(file_path)
 root = tree.getroot()
 
-# Найдём все testsuite и поменяем их имя, если оно "TestResults"
 for testsuite in root.findall("testsuite"):
     if testsuite.get("name") == "TestResults":
         testsuite.set("name", suite_name)

@@ -52,10 +52,22 @@ jobs:
       - name: Create results folder
         run: mkdir -p TestResults
 
-      - name: Check if results folder exists
+      - name: Run Unit Tests
+        working-directory: src
         run: |
-          if [ ! -d "TestResults" ]; then
-            exit 1
+          RUN_DIR="../TestResults"
+          mkdir -p "$RUN_DIR"
+
+          UNIT_TEST_EXIT_CODE=0
+          if ! swift test --skip-build \
+            --filter UnitTests \
+            --parallel \
+            --num-workers 8 \
+            --disable-swift-testing \
+            --xunit-output "$RUN_DIR/unit-tests.xml"; then
+              UNIT_TEST_EXIT_CODE=$?
           fi
+          echo "UNIT_TEST_EXIT_CODE=$UNIT_TEST_EXIT_CODE" >> $GITHUB_ENV
+          python3 TestScripts/fix_report.py "$RUN_DIR/unit-tests.xml" UnitTests
 
       
