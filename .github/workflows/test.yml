@@ -12,6 +12,7 @@ jobs:
 
     env:
       CONFIG_PATH: ./src/Shared/config.json
+      RUN_DIR: TestResults
 
     services:
       postgres-test:
@@ -50,13 +51,14 @@ jobs:
         run: swift build --build-tests
 
       - name: Create results folder
-        run: mkdir -p TestResults
+        run: mkdir -p "$RUN_DIR"
 
+      # ---------- UNIT TESTS ----------
       - name: Run Unit Tests
         working-directory: src
         run: |
-          RUN_DIR="../TestResults"
-          mkdir -p "$RUN_DIR"
+          echo "▶ Running Unit Tests..."
+          mkdir -p "../$RUN_DIR"
 
           UNIT_TEST_EXIT_CODE=0
           if ! swift test --skip-build \
@@ -64,10 +66,84 @@ jobs:
             --parallel \
             --num-workers 8 \
             --disable-swift-testing \
-            --xunit-output "$RUN_DIR/unit-tests.xml"; then
+            --xunit-output "../$RUN_DIR/unit-tests.xml"; then
               UNIT_TEST_EXIT_CODE=$?
           fi
+          echo "▶ Unit tests finished with exit code: $UNIT_TEST_EXIT_CODE"
           echo "UNIT_TEST_EXIT_CODE=$UNIT_TEST_EXIT_CODE" >> $GITHUB_ENV
-          python3 TestScripts/fix_report.py "$RUN_DIR/unit-tests.xml" UnitTests
+          python3 TestScripts/fix_report.py "../$RUN_DIR/unit-tests.xml" UnitTests || true
 
-      
+      # ---------- INTEGRATION TESTS ----------
+      - name: Run Integration Tests
+        working-directory: src
+        run: |
+          echo "▶ Running Integration Tests..."
+          IT_TEST_EXIT_CODE=0
+
+          if [ "$UNIT_TEST_EXIT_CODE" -ne 0 ]; then
+              echo "Unit tests failed — skipping Integration tests."
+              python3 TestScripts/generate_skipped_report.py IntegrationTests "../$RUN_DIR/integration-tests.xml" || true
+              IT_TEST_EXIT_CODE=$UNIT_TEST_EXIT_CODE
+          else
+              if ! sh TestScripts/clean_db.sh; then
+                  echo "Failed to clean DB before Integration tests"
+                  exit 1
+              fi
+
+              if ! swift test --skip-build \
+                --filter IntegrationTests \
+                --parallel \
+                --num-workers 1 \
+                --disable-swift-testing \
+                --xunit-output "../$RUN_DIR/integration-tests.xml"; then
+                  IT_TEST_EXIT_CODE=1
+              fi
+
+              if ! sh TestScripts/clean_db.sh; then
+                  echo "Failed to clean DB after Integration tests"
+              fi
+          fi
+          echo "▶ Integration tests finished with exit code: $IT_TEST_EXIT_CODE"
+          echo "IT_TEST_EXIT_CODE=$IT_TEST_EXIT_CODE" >> $GITHUB_ENV
+          python3 TestScripts/fix_report.py "../$RUN_DIR/integration-tests.xml" IntegrationTests || true
+
+      # ---------- E2E TESTS ----------
+      - name: Run E2E Tests
+        working-directory: src
+        run: |
+          echo "▶ Running E2E Tests..."
+          E2E_TEST_EXIT_CODE=0
+
+          if [ "$IT_TEST_EXIT_CODE" -ne 0 ]; then
+              echo "Integration tests failed — skipping E2E tests."
+              python3 TestScripts/generate_skipped_report.py E2ETests "../$RUN_DIR/e2e-tests.xml" || true
+              E2E_TEST_EXIT_CODE=$IT_TEST_EXIT_CODE
+          else
+              if ! sh TestScripts/clean_db.sh; then
+                  echo "Failed to clean DB before E2E tests"
+                  exit 1
+              fi
+
+              if ! swift test --skip-build \
+                --filter E2ETests \
+                --parallel \
+                --num-workers 1 \
+                --disable-swift-testing \
+                --xunit-output "../$RUN_DIR/e2e-tests.xml"; then
+                  E2E_TEST_EXIT_CODE=1
+              fi
+
+              if ! sh TestScripts/clean_db.sh; then
+                  echo "Failed to clean DB after E2E tests"
+              fi
+          fi
+          echo "▶ E2E tests finished with exit code: $E2E_TEST_EXIT_CODE"
+          echo "E2E_TEST_EXIT_CODE=$E2E_TEST_EXIT_CODE" >> $GITHUB_ENV
+          python3 TestScripts/fix_report.py "../$RUN_DIR/e2e-tests.xml" E2ETests
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ env.RUN_DIR }}
