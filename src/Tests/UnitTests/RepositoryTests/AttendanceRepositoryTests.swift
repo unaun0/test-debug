@@ -59,7 +59,7 @@ final class AttendanceRepositoryTests: XCTestCase {
         try await sut.delete(id: attendance.id)
 
         let fetched = try await sut.find(id: attendance.id)
-        XCTAssertNotNil(fetched)
+        XCTAssertNil(fetched)
     }
 
     func testDeleteAttendance_NotFound() async throws {
